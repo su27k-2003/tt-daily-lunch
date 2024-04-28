@@ -2,24 +2,29 @@ name: run main.py
 
 on:
   schedule:
-    - cron: '*/5 * * * *' # At 00:00 on Monday
+    - cron: '*/15 0 * * *' 
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
+
       - name: checkout repo content
-        uses: actions/checkout@v2 # checkout the repository content
+        uses: actions/checkout@v2 # checkout the repository content to github runner
 
       - name: setup python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.10' # install the python version needed
-
+          python-version: '3.9' # install the python version needed
+          
       - name: install python packages
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-
+          
       - name: execute py script # run main.py
-        run: python main.py
+        env:
+          git_token: ${{ secrets.git_token }}
+          hampr_email: ${{ secrets.hampr_email }}
+          hampr_password: ${{ secrets.hampr_password }}
+        run: python lunch.py
