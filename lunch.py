@@ -45,6 +45,7 @@ def meal_url(today):
     today_meal_id = start_day_id + day_diff
 
     meal_url = meal_url_base + str(today_meal_id) + ".json"
+    #print(meal_url)
     return meal_url
 
 
@@ -59,7 +60,7 @@ def check_lunch(meal_url, retry, user_jwt):
     for i in range(retry):
         try:
             res = requests.get(url = meal_url, headers = header)
-            
+
             if res.status_code not in [200, 404]:
                 time.sleep(5) #tries to retrieve the URL, if 200 or 404 is not received, waits 5 seconds before trying again
             else:
@@ -71,8 +72,8 @@ def check_lunch(meal_url, retry, user_jwt):
                     # If date cannot be found then it's Public Holiday
                     date = "Public Holiday"
                     lunch = "No Lunch"
-                    #print (date, lunch)
-                    return [date, lunch]
+                    print (date, lunch)
+                    return date, lunch
                 
                 try:
                     # Check ordered lunch
@@ -80,18 +81,23 @@ def check_lunch(meal_url, retry, user_jwt):
                 except:
                     # If date can be found but lunch cannot be found then lunch unbooked yet
                     lunch = "Unbooked"
-                    #print (date, lunch)
-                    return [date, lunch]
+                    print (date, lunch)
+                    return date, lunch
+                
+                print (date, lunch)
+                return date, lunch
         except requests.exceptions.ConnectionError:
             time.sleep(5)
+            print("HTTP request failed with check_lunch()")
             return "HTTP request failed with check_lunch()"
 
 
 def git_commit(data):
     repo = g.get_repo("su27k-2003/tt-daily-lunch")
     contents = repo.get_contents("index.html")
-    #print("commit data:", data)
-    repo.update_file(contents.path, "lunch", str(data), contents.sha, branch="main")
+    
+    # Commit to index.html in main branch withtou ', (, )
+    repo.update_file(contents.path, "lunch", str(data).replace("'", "").replace("(", "").replace(")", ""), contents.sha, branch="main")
     g.close()
 
 
