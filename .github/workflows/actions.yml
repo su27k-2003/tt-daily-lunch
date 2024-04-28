@@ -1,8 +1,8 @@
-name: run main.py
+name: run lunch.py
 
 on:
   schedule:
-    - cron: '*/15 0 * * *' 
+    - cron: '*/5 0 * * *' 
 
 jobs:
   build:
