@@ -35,9 +35,9 @@ def get_userjwt(login_url, retry):
 
 def meal_url(today):
     # Check how many week days between '2024-04-15' and today to calculate meal_id
-    # e.g. For 2024-04-15, meal_url: https://hampr.com.au/_next/data/duyRCMIOvouBrAGRkN8NC/en-AU/program-meal/8207.json
+    # e.g. For 2024-04-15, meal_url: https://hampr.com.au/_next/data/bSD4JkJA9g_pipPEAc-L1/en-AU/program-meal/8207.json
 
-    meal_url_base = "https://hampr.com.au/_next/data/duyRCMIOvouBrAGRkN8NC/en-AU/program-meal/"
+    meal_url_base = "https://hampr.com.au/_next/data/bSD4JkJA9g_pipPEAc-L1/en-AU/program-meal/"
     start_day = '2024-04-29'
     start_day_id = 8591 # 2024-04-29
     # Calculate how many weekdays between the two dates
@@ -45,7 +45,7 @@ def meal_url(today):
     today_meal_id = start_day_id + day_diff
 
     meal_url = meal_url_base + str(today_meal_id) + ".json"
-    #print(meal_url)
+    # print(meal_url)
     return meal_url
 
 
