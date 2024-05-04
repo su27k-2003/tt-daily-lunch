@@ -116,10 +116,10 @@ if __name__ == '__main__':
     g = Github(auth=auth)
 
     # Check today's lunch
-    check_lunch(meal_url=meal_url(today), retry=retry, user_jwt=get_userjwt(login_url, retry))
+    #check_lunch(meal_url=meal_url(today), retry=retry, user_jwt=get_userjwt(login_url, retry))
 
     # Update index.html file in the Github repo
-    #git_commit(data = check_lunch(meal_url=meal_url(today), retry=retry, user_jwt=get_userjwt(login_url, retry)))
+    git_commit(data = check_lunch(meal_url=meal_url(today), retry=retry, user_jwt=get_userjwt(login_url, retry)))
 
     # Check lunchs for the next 5 days
     # for i in range(5):
