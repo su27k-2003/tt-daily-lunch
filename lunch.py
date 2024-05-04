@@ -3,6 +3,7 @@ from datetime import date,timedelta
 import numpy as np
 from github import Github
 from github import Auth
+from bs4 import BeautifulSoup
 
 
 def get_userjwt(login_url, retry):
@@ -37,15 +38,15 @@ def meal_url(today):
     # Check how many week days between '2024-04-15' and today to calculate meal_id
     # e.g. For 2024-04-15, meal_url: https://hampr.com.au/_next/data/bSD4JkJA9g_pipPEAc-L1/en-AU/program-meal/8207.json
 
-    meal_url_base = "https://hampr.com.au/_next/data/bSD4JkJA9g_pipPEAc-L1/en-AU/program-meal/"
+    meal_url_base = "https://hampr.com.au/program-meal/"
     start_day = '2024-04-29'
     start_day_id = 8591 # 2024-04-29
     # Calculate how many weekdays between the two dates
     day_diff = np.busday_count(start_day, today)
     today_meal_id = start_day_id + day_diff
 
-    meal_url = meal_url_base + str(today_meal_id) + ".json"
-    # print(meal_url)
+    meal_url = meal_url_base + str(today_meal_id)
+    #print(meal_url)
     return meal_url
 
 
@@ -64,20 +65,22 @@ def check_lunch(meal_url, retry, user_jwt):
             if res.status_code not in [200, 404]:
                 time.sleep(5) #tries to retrieve the URL, if 200 or 404 is not received, waits 5 seconds before trying again
             else:
-                data = json.loads(res.text) # Load HTTP GET response in {}
-                
+                # parser json data from HTML
+                soup = BeautifulSoup(res.text, 'html.parser').find(id="__NEXT_DATA__")
+                data = json.loads(soup.text) # Load json data in {}
+
                 try:
-                    date = data.get("pageProps").get("programMeal").get("eventDate") # Check date
+                    date = data.get("props").get("pageProps").get("programMeal").get("eventDate") # Check date
                 except:
                     # If date cannot be found then it's Public Holiday
                     date = "Public Holiday"
-                    lunch = "No Lunch"
+                    lunch = "N/A"
                     print (date, lunch)
                     return date, lunch
                 
                 try:
                     # Check ordered lunch
-                    lunch = data.get("pageProps").get("programMeal").get("ProgramMealSelections")[0].get("selection").get("item").get("name")
+                    lunch = data.get("props").get("pageProps").get("programMeal").get("ProgramMealSelections")[0].get("selection").get("item").get("name")
                 except:
                     # If date can be found but lunch cannot be found then lunch unbooked yet
                     lunch = "Unbooked"
@@ -113,10 +116,10 @@ if __name__ == '__main__':
     g = Github(auth=auth)
 
     # Check today's lunch
-    #check_lunch(meal_url=meal_url(today), retry=retry, user_jwt=get_userjwt(login_url, retry))
+    check_lunch(meal_url=meal_url(today), retry=retry, user_jwt=get_userjwt(login_url, retry))
 
     # Update index.html file in the Github repo
-    git_commit(data = check_lunch(meal_url=meal_url(today), retry=retry, user_jwt=get_userjwt(login_url, retry)))
+    #git_commit(data = check_lunch(meal_url=meal_url(today), retry=retry, user_jwt=get_userjwt(login_url, retry)))
 
     # Check lunchs for the next 5 days
     # for i in range(5):
