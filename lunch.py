@@ -34,23 +34,27 @@ def get_userjwt(login_url, retry):
             pass
 
 
-def meal_url(today):
-    # Check how many week days between '2024-04-15' and today to calculate meal_id
-    # e.g. For 2024-04-15, meal_url: https://hampr.com.au/_next/data/bSD4JkJA9g_pipPEAc-L1/en-AU/program-meal/8207.json
+# def meal_url(today):
+#     # Check how many week days between '2024-04-15' and today to calculate meal_id
+#     # e.g. For 2024-04-15, meal_url: https://hampr.com.au/_next/data/bSD4JkJA9g_pipPEAc-L1/en-AU/program-meal/8207.json
 
+#     meal_url_base = "https://hampr.com.au/program-meal/"
+#     start_day = '2024-04-29'
+#     start_day_id = 8591 # 2024-04-29
+#     # Calculate how many weekdays between the two dates
+#     day_diff = np.busday_count(start_day, today)
+#     today_meal_id = start_day_id + day_diff
+
+#     meal_url = meal_url_base + str(today_meal_id)
+#     print(meal_url)
+#     return meal_url
+
+
+def todays_meal_url(today, retry, user_jwt):
+    
     meal_url_base = "https://hampr.com.au/program-meal/"
-    start_day = '2024-04-29'
-    start_day_id = 8591 # 2024-04-29
-    # Calculate how many weekdays between the two dates
-    day_diff = np.busday_count(start_day, today)
-    today_meal_id = start_day_id + day_diff
-
-    meal_url = meal_url_base + str(today_meal_id)
-    #print(meal_url)
-    return meal_url
-
-
-def check_lunch(meal_url, retry, user_jwt):
+    # workspace/1565 = TikTok - Darling Park
+    programmeal_url = "https://api.hampr.com.au/api/v1/workspace/1565/schedule-between?startDate="+str(today)+"&endDate="+str(today)
 
     header = {
         "Content-Type": "application/json",
@@ -60,7 +64,33 @@ def check_lunch(meal_url, retry, user_jwt):
 
     for i in range(retry):
         try:
-            res = requests.get(url = meal_url, headers = header)
+            res = requests.get(url = programmeal_url, headers = header)
+
+            if res.status_code not in [200, 404]:
+                time.sleep(5) #tries to retrieve the URL, if 200 or 404 is not received, waits 5 seconds before trying again
+            else:
+                data = json.loads(res.text) # Load json data in {}
+                programmeal_id = data[0].get("programMealId")
+                todays_meal_url = meal_url_base + str(programmeal_id)
+                print(todays_meal_url)
+                return todays_meal_url
+        except requests.exceptions.ConnectionError:
+            time.sleep(5)
+            print("HTTP request failed with meal_url()")
+            return "HTTP request failed with meal_url()"
+
+
+def check_lunch(url, retry, user_jwt):
+
+    header = {
+        "Content-Type": "application/json",
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+        "Cookie": user_jwt
+    }
+
+    for i in range(retry):
+        try:
+            res = requests.get(url = url, headers = header)
 
             if res.status_code not in [200, 404]:
                 time.sleep(5) #tries to retrieve the URL, if 200 or 404 is not received, waits 5 seconds before trying again
@@ -82,7 +112,7 @@ def check_lunch(meal_url, retry, user_jwt):
                     # Check ordered lunch
                     lunch = data.get("props").get("pageProps").get("programMeal").get("ProgramMealSelections")[0].get("selection").get("item").get("name")
                 except:
-                    # If date can be found but lunch cannot be found then lunch unbooked yet
+                    # If date can be found, but lunch cannot be found then lunch unbooked yet
                     lunch = "Unbooked"
                     print (date, lunch)
                     return date, lunch
@@ -108,18 +138,21 @@ def git_commit(data):
 if __name__ == '__main__':
     login_url = "https://api.hampr.com.au/api/v1/account/login"
     retry = 5
-    today = date.today()
 
+    # Get user token
+    user_jwt = get_userjwt(login_url, retry)
+
+    # Check today's lunch
+    today = date.today()
+    #check_lunch(url=todays_meal_url(today, retry=retry, user_jwt=user_jwt), retry=retry, user_jwt=user_jwt)
+
+    # Update index.html file in the Github repo
     # using an access token
     auth = Auth.Token(os.environ['git_token'])
     # Public Web Github
     g = Github(auth=auth)
 
-    # Check today's lunch
-    #check_lunch(meal_url=meal_url(today), retry=retry, user_jwt=get_userjwt(login_url, retry))
-
-    # Update index.html file in the Github repo
-    git_commit(data = check_lunch(meal_url=meal_url(today), retry=retry, user_jwt=get_userjwt(login_url, retry)))
+    git_commit(data = check_lunch(url=todays_meal_url(today, retry=retry, user_jwt=user_jwt), retry=retry, user_jwt=user_jwt))
 
     # Check lunchs for the next 5 days
     # for i in range(5):
