@@ -55,6 +55,8 @@ def todays_meal_url(today, retry, user_jwt):
     meal_url_base = "https://hampr.com.au/program-meal/"
     # workspace/1565 = TikTok - Darling Park
     programmeal_url = "https://api.hampr.com.au/api/v1/workspace/1565/schedule-between?startDate="+str(today)+"&endDate="+str(today)
+    #programmeal_url = "https://api.hampr.com.au/api/v1/workspace/1565/schedule-between?startDate=2024-05-10&endDate=2024-05-10"
+    #print(programmeal_url)
 
     header = {
         "Content-Type": "application/json",
@@ -70,7 +72,13 @@ def todays_meal_url(today, retry, user_jwt):
                 time.sleep(5) #tries to retrieve the URL, if 200 or 404 is not received, waits 5 seconds before trying again
             else:
                 data = json.loads(res.text) # Load json data in {}
-                programmeal_id = data[0].get("programMealId")
+
+                # Sometimes (unbooked day?) programMealId in data[1] rather than data[0]
+                if data[0].get("programMealId"):
+                    programmeal_id = data[0].get("programMealId")
+                else:
+                    programmeal_id = data[1].get("programMealId")
+
                 todays_meal_url = meal_url_base + str(programmeal_id)
                 print(todays_meal_url)
                 return todays_meal_url
@@ -131,6 +139,7 @@ def git_commit(data):
     
     # Commit to index.html in main branch withtou ', (, )
     repo.update_file(contents.path, "lunch", str(data).replace("'", "").replace("(", "").replace(")", ""), contents.sha, branch="main")
+    print("Git commit done!")
     g.close()
 
 
