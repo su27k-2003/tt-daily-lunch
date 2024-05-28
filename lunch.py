@@ -39,7 +39,7 @@ def todays_meal_url(today, retry, user_jwt):
     meal_url_base = "https://hampr.com.au/program-meal/"
     # workspace/1565 = TikTok - Darling Park
     programmeal_url = "https://api.hampr.com.au/api/v1/workspace/1565/schedule-between?startDate="+str(today)+"&endDate="+str(today)
-    #programmeal_url = "https://api.hampr.com.au/api/v1/workspace/1565/schedule-between?startDate=2024-05-27&endDate=2024-05-27"
+    #programmeal_url = "https://api.hampr.com.au/api/v1/workspace/1565/schedule-between?startDate=2024-05-29&endDate=2024-05-29"
     #print(programmeal_url)
 
     header = {
@@ -100,19 +100,35 @@ def check_lunch(url, retry, user_jwt):
                     print (date, lunch)
                     return date, lunch
                 
-                try:
-                    # Check ordered lunch and vender
-                    lunch = data.get("props").get("pageProps").get("programMeal").get("ProgramMealSelections")[0].get("selection").get("item").get("name")
-                    vender = data.get("props").get("pageProps").get("programMeal").get("Purchases")[0].get("purchaseContentDetails").get("partners")[0].get("partner").get("name")
-                except:
-                    # If date can be found, but lunch cannot be found then lunch unbooked yet
-                    lunch = "Unbooked"
-                    vender = "N/A"
-                    print (date, lunch, vender)
-                    return date, lunch, vender
                 
-                print (date, lunch, vender)
-                return date, lunch, vender
+                try:
+                    # Check ordered lunch and vender name
+                    lunch = data.get("props").get("pageProps").get("programMeal").get("ProgramMealSelections")[0].get("selection").get("item").get("name")
+                    vender_partnerId = data.get("props").get("pageProps").get("programMeal").get("ProgramMealSelections")[0].get("selection").get("item").get("partnerId")
+                    #print("vender_partnerId: ", vender_partnerId)
+                    
+                    # Check vender name
+                    try:
+                        for i in range(10):
+                            vender_id = data.get("props").get("pageProps").get("programMeal").get("Purchases")[0].get("purchaseContentDetails").get("partners")[i].get("partner").get("id")
+                            #print("vender_id: ", vender_id)
+                            if vender_id == vender_partnerId:
+                                vender_name = data.get("props").get("pageProps").get("programMeal").get("Purchases")[0].get("purchaseContentDetails").get("partners")[i].get("partner").get("name")
+                                #print("vender: ", vender_name)
+                                break
+                    except:
+                        vender_name = "Not Found"
+                        #print("vender_name: ", vender_name)
+
+                except:
+                    # If date can be found, but lunch cannot be found then lunch unbooked
+                    lunch = "Unbooked"
+                    vender_name = "N/A"
+                    print (date, lunch, vender_name)
+                    return date, lunch, vender_name
+                
+                print (date, lunch, vender_name)
+                return date, lunch, vender_name
         except requests.exceptions.ConnectionError:
             time.sleep(5)
             print("HTTP request failed with check_lunch()")
