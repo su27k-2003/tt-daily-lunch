@@ -167,7 +167,7 @@ if __name__ == '__main__':
 
     # Check today's lunch
     today = date.today()
-    check_lunch(url=todays_meal_url(today, retry=retry, user_jwt=user_jwt), retry=retry, user_jwt=user_jwt)
+    #check_lunch(url=todays_meal_url(today, retry=retry, user_jwt=user_jwt), retry=retry, user_jwt=user_jwt)
 
     # Update index.html file in the Github repo
     # using an access token
@@ -175,7 +175,7 @@ if __name__ == '__main__':
     # Public Web Github
     g = Github(auth=auth)
 
-    #git_commit(data = check_lunch(url=todays_meal_url(today, retry=retry, user_jwt=user_jwt), retry=retry, user_jwt=user_jwt))
+    git_commit(data = check_lunch(url=todays_meal_url(today, retry=retry, user_jwt=user_jwt), retry=retry, user_jwt=user_jwt))
 
     # #Check lunchs for the next 5 days
     # for i in range(5):
