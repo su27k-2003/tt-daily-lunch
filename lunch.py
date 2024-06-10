@@ -39,7 +39,7 @@ def todays_meal_url(today, retry, user_jwt):
     meal_url_base = "https://hampr.com.au/program-meal/"
     # workspace/1565 = TikTok - Darling Park
     programmeal_url = "https://api.hampr.com.au/api/v1/workspace/1565/schedule-between?startDate="+str(today)+"&endDate="+str(today)
-    #programmeal_url = "https://api.hampr.com.au/api/v1/workspace/1565/schedule-between?startDate=2024-05-29&endDate=2024-05-29"
+    #programmeal_url = "https://api.hampr.com.au/api/v1/workspace/1565/schedule-between?startDate=2024-06-11&endDate=2024-06-11"
     #print(programmeal_url)
 
     header = {
@@ -58,10 +58,16 @@ def todays_meal_url(today, retry, user_jwt):
                 data = json.loads(res.text) # Load json data in {}
 
                 # Sometimes (unbooked day?) programMealId in data[1] rather than data[0]
-                if data[0].get("programMealId"):
-                    programmeal_id = data[0].get("programMealId")
-                else:
-                    programmeal_id = data[1].get("programMealId")
+                try:
+                    if data[0].get("programMealId"):
+                        programmeal_id = data[0].get("programMealId")
+                    else:
+                        programmeal_id = data[1].get("programMealId")
+                except:
+                    # If "programMealId" cannot be found then it's Public Holiday
+                    todays_meal_url = "Public Holiday"
+                    print(todays_meal_url)
+                    return todays_meal_url
 
                 todays_meal_url = meal_url_base + str(programmeal_id)
                 print(todays_meal_url)
@@ -73,7 +79,13 @@ def todays_meal_url(today, retry, user_jwt):
 
 
 def check_lunch(url, retry, user_jwt):
-
+    # It's Public Holiday today
+    if url == "Public Holiday":
+        date = "Public Holiday"
+        lunch = "N/A"
+        print (date, lunch)
+        return date, lunch
+        
     header = {
         "Content-Type": "application/json",
         "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
@@ -155,7 +167,7 @@ if __name__ == '__main__':
 
     # Check today's lunch
     today = date.today()
-    #check_lunch(url=todays_meal_url(today, retry=retry, user_jwt=user_jwt), retry=retry, user_jwt=user_jwt)
+    check_lunch(url=todays_meal_url(today, retry=retry, user_jwt=user_jwt), retry=retry, user_jwt=user_jwt)
 
     # Update index.html file in the Github repo
     # using an access token
@@ -163,7 +175,7 @@ if __name__ == '__main__':
     # Public Web Github
     g = Github(auth=auth)
 
-    git_commit(data = check_lunch(url=todays_meal_url(today, retry=retry, user_jwt=user_jwt), retry=retry, user_jwt=user_jwt))
+    #git_commit(data = check_lunch(url=todays_meal_url(today, retry=retry, user_jwt=user_jwt), retry=retry, user_jwt=user_jwt))
 
     # #Check lunchs for the next 5 days
     # for i in range(5):
