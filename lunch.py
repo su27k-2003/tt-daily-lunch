@@ -166,7 +166,8 @@ if __name__ == '__main__':
     user_jwt = get_userjwt(login_url, retry)
 
     # Check today's lunch
-    today = date.today()
+    #today = date.today() 
+    today = date.today() + timedelta(days=1) # since cronjob in Github was setup at 22:00 UTC which is a day before AU UTC+10
     #check_lunch(url=todays_meal_url(today, retry=retry, user_jwt=user_jwt), retry=retry, user_jwt=user_jwt)
 
     # Update index.html file in the Github repo
