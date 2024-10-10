@@ -2,7 +2,7 @@ name: run lunch.py
 
 on:
   schedule:
-     - cron: '0 22 * * 1-5'  # UTC -> +10 Sydney 10:00 am every weekday
+     - cron: '0 20 * * 1-5'  # UTC -> +10 Sydney 10:00 am every weekday
 
 jobs:
   build:
