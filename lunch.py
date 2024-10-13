@@ -106,8 +106,8 @@ def check_lunch(url, retry, user_jwt):
                 try:
                     date = data.get("props").get("pageProps").get("programMeal").get("eventDate") # Check date
                 except:
-                    # If date cannot be found then it's Public Holiday
-                    date = "Public Holiday"
+                    # If date cannot be found then it's Public Holiday/Weekend
+                    date = "Public Holiday/Weekend"
                     lunch = "N/A"
                     print (date, lunch)
                     return date, lunch
