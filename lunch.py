@@ -64,8 +64,8 @@ def todays_meal_url(today, retry, user_jwt):
                     else:
                         programmeal_id = data[1].get("programMealId")
                 except:
-                    # If "programMealId" cannot be found then it's Public Holiday
-                    todays_meal_url = "Public Holiday"
+                    # If "programMealId" cannot be found then it's Public Holiday/Weekend
+                    todays_meal_url = "Public Holiday/Weekend"
                     print(todays_meal_url)
                     return todays_meal_url
 
@@ -79,9 +79,9 @@ def todays_meal_url(today, retry, user_jwt):
 
 
 def check_lunch(url, retry, user_jwt):
-    # It's Public Holiday today
-    if url == "Public Holiday":
-        date = "Public Holiday"
+    # It's Public Holiday today/Weekend
+    if url == "Public Holiday/Weekend":
+        date = "Public Holiday/Weekend"
         lunch = "N/A"
         print (date, lunch)
         return date, lunch
