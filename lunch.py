@@ -162,23 +162,32 @@ if __name__ == '__main__':
     login_url = "https://api.hampr.com.au/api/v1/account/login"
     retry = 5
 
-    # Get user token
-    user_jwt = get_userjwt(login_url, retry)
-
-    # Check today's lunch
-    #today = date.today() 
-    today = date.today() + timedelta(days=1) # since cronjob in Github was setup at 22:00 UTC which is a day before AU UTC+10
-    #check_lunch(url=todays_meal_url(today, retry=retry, user_jwt=user_jwt), retry=retry, user_jwt=user_jwt)
-
     # Update index.html file in the Github repo
     # using an access token
     auth = Auth.Token(os.environ['git_token'])
     # Public Web Github
     g = Github(auth=auth)
 
-    git_commit(data = check_lunch(url=todays_meal_url(today, retry=retry, user_jwt=user_jwt), retry=retry, user_jwt=user_jwt))
+    # Get user token
+    user_jwt = get_userjwt(login_url, retry)
 
-    # #Check lunchs for the next 5 days
-    # for i in range(5):
-    #     check_lunch(url=todays_meal_url(today+timedelta(days=i), retry=retry, user_jwt=user_jwt), retry=retry, user_jwt=user_jwt)
-    #     time.sleep(1)
+    # Check today's lunch
+    #today = date.today() 
+    today = date.today() + timedelta(days=1) # since cronjob in Github was setup at 22:00 UTC which is a day before AU UTC+10
+    check_lunch(url=todays_meal_url(today, retry=retry, user_jwt=user_jwt), retry=retry, user_jwt=user_jwt)
+
+    #git_commit(data = check_lunch(url=todays_meal_url(today, retry=retry, user_jwt=user_jwt), retry=retry, user_jwt=user_jwt))
+
+    #Check lunchs for the next week
+    next_week = date.today() + timedelta(days=4)
+    #print(next_week)
+    #check_lunch(url=todays_meal_url(next_week, retry=retry, user_jwt=user_jwt), retry=retry, user_jwt=user_jwt)
+
+    if "Unbooked" in check_lunch(url=todays_meal_url(next_week, retry=retry, user_jwt=user_jwt), retry=retry, user_jwt=user_jwt):
+        print("attention: Book lunch for next week!!!")
+        print("git_commit...")
+        attention = "ATTENTION: Book lunch for " + str(next_week) + "!!!\n"
+        git_commit(data = attention + str(check_lunch(url=todays_meal_url(today, retry=retry, user_jwt=user_jwt), retry=retry, user_jwt=user_jwt)))
+    else:
+        print("lunch booked for the next week")
+        git_commit(data = check_lunch(url=todays_meal_url(today, retry=retry, user_jwt=user_jwt), retry=retry, user_jwt=user_jwt))
