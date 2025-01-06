@@ -65,12 +65,12 @@ def todays_meal_url(today, retry, user_jwt):
                         programmeal_id = data[1].get("programMealId")
                 except:
                     # If "programMealId" cannot be found then it's Public Holiday/Weekend
-                    todays_meal_url = "Public Holiday/Weekend"
-                    print(todays_meal_url)
+                    todays_meal_url = "Could not find programMealId!"
+                    #print(todays_meal_url)
                     return todays_meal_url
 
                 todays_meal_url = meal_url_base + str(programmeal_id)
-                print(todays_meal_url)
+                #print(todays_meal_url)
                 return todays_meal_url
         except requests.exceptions.ConnectionError:
             time.sleep(5)
@@ -80,10 +80,10 @@ def todays_meal_url(today, retry, user_jwt):
 
 def check_lunch(url, retry, user_jwt):
     # It's Public Holiday today/Weekend
-    if url == "Public Holiday/Weekend":
-        date = "Public Holiday/Weekend"
+    if url == "Could not find programMealId!":
+        date = "Could not find programMealId!"
         lunch = "N/A"
-        print (date, lunch)
+        #print (date, lunch)
         return date, lunch
         
     header = {
@@ -179,14 +179,19 @@ if __name__ == '__main__':
     #git_commit(data = check_lunch(url=todays_meal_url(today, retry=retry, user_jwt=user_jwt), retry=retry, user_jwt=user_jwt))
 
     #Check lunchs for the next week
-    next_week = date.today() + timedelta(days=4)
-    #print(next_week)
+    next_week = date.today() + timedelta(days=3)
+    print(next_week)
     #check_lunch(url=todays_meal_url(next_week, retry=retry, user_jwt=user_jwt), retry=retry, user_jwt=user_jwt)
 
     if "Unbooked" in check_lunch(url=todays_meal_url(next_week, retry=retry, user_jwt=user_jwt), retry=retry, user_jwt=user_jwt):
-        print("attention: Book lunch for next week!!!")
-        print("git_commit...")
         attention = "ATTENTION: Book lunch for " + str(next_week) + "!!!\n"
+        print(attention)
+        #print("git_commit...")
+        git_commit(data = attention + str(check_lunch(url=todays_meal_url(today, retry=retry, user_jwt=user_jwt), retry=retry, user_jwt=user_jwt)))
+    elif "Could not find programMealId!" in check_lunch(url=todays_meal_url(next_week, retry=retry, user_jwt=user_jwt), retry=retry, user_jwt=user_jwt):
+        attention = "ATTENTION: Could not find programMealId for " + str(next_week) + "!!!\n"
+        print(attention)
+        #print("git_commit...")
         git_commit(data = attention + str(check_lunch(url=todays_meal_url(today, retry=retry, user_jwt=user_jwt), retry=retry, user_jwt=user_jwt)))
     else:
         print("lunch booked for the next week")
