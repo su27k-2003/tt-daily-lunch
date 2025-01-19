@@ -38,8 +38,9 @@ def todays_meal_url(today, retry, user_jwt):
     
     meal_url_base = "https://hampr.com.au/program-meal/"
     # workspace/1565 = TikTok - Darling Park
-    programmeal_url = "https://api.hampr.com.au/api/v1/workspace/1565/schedule-between?startDate="+str(today)+"&endDate="+str(today)
-    #programmeal_url = "https://api.hampr.com.au/api/v1/workspace/1565/schedule-between?startDate=2024-06-11&endDate=2024-06-11"
+    # workspace/714 = TikTok - SalesForce Tower
+    programmeal_url = "https://api.hampr.com.au/api/v1/workspace/714/schedule-between?startDate="+str(today)+"&endDate="+str(today)
+    #programmeal_url = "https://api.hampr.com.au/api/v1/workspace/714/schedule-between?startDate=2025-01-20&endDate=2025-01-20"
     #print(programmeal_url)
 
     header = {
@@ -117,6 +118,7 @@ def check_lunch(url, retry, user_jwt):
                     # Check ordered lunch and vender name
                     lunch = data.get("props").get("pageProps").get("programMeal").get("ProgramMealSelections")[0].get("selection").get("item").get("name")
                     vender_partnerId = data.get("props").get("pageProps").get("programMeal").get("ProgramMealSelections")[0].get("selection").get("item").get("partnerId")
+                    location = data.get("props").get("pageProps").get("programMeal").get("ProgramMealSelections")[0].get("location")
                     #print("vender_partnerId: ", vender_partnerId)
                     
                     # Check vender name
@@ -136,11 +138,11 @@ def check_lunch(url, retry, user_jwt):
                     # If date can be found, but lunch cannot be found then lunch unbooked
                     lunch = "Unbooked"
                     vender_name = "N/A"
-                    print (date, lunch, vender_name)
-                    return date, lunch, vender_name
+                    print (date, lunch, vender_name, location)
+                    return date, lunch, vender_name, location
                 
-                print (date, lunch, vender_name)
-                return date, lunch, vender_name
+                print (date, lunch, vender_name, location)
+                return date, lunch, vender_name, location
         except requests.exceptions.ConnectionError:
             time.sleep(5)
             print("HTTP request failed with check_lunch()")
@@ -179,7 +181,7 @@ if __name__ == '__main__':
     #git_commit(data = check_lunch(url=todays_meal_url(today, retry=retry, user_jwt=user_jwt), retry=retry, user_jwt=user_jwt))
 
     #Check lunchs for the next week
-    next_week = date.today() + timedelta(days=3)
+    next_week = date.today() + timedelta(days=7)
     print(next_week)
     #check_lunch(url=todays_meal_url(next_week, retry=retry, user_jwt=user_jwt), retry=retry, user_jwt=user_jwt)
 
