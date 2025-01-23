@@ -60,18 +60,16 @@ def todays_meal_url(today, retry, user_jwt):
 
                 # Sometimes (unbooked day?) programMealId in data[1] rather than data[0]
                 try:
-                    if data[0].get("programMealId"):
-                        programmeal_id = data[0].get("programMealId")
-                    else:
-                        programmeal_id = data[1].get("programMealId")
+                    if data[0].get("id"):
+                        programmeal_id = data[0].get("id")
                 except:
                     # If "programMealId" cannot be found then it's Public Holiday/Weekend
-                    todays_meal_url = "Could not find programMealId!"
-                    #print(todays_meal_url)
+                    todays_meal_url = "Could not find meal id!"
+                    print(todays_meal_url)
                     return todays_meal_url
 
                 todays_meal_url = meal_url_base + str(programmeal_id)
-                #print(todays_meal_url)
+                print(todays_meal_url)
                 return todays_meal_url
         except requests.exceptions.ConnectionError:
             time.sleep(5)
@@ -81,10 +79,10 @@ def todays_meal_url(today, retry, user_jwt):
 
 def check_lunch(url, retry, user_jwt):
     # It's Public Holiday today/Weekend
-    if url == "Could not find programMealId!":
-        date = "Could not find programMealId!"
+    if url == "Could not find meal id!":
+        date = "Could not find meal id"
         lunch = "N/A"
-        #print (date, lunch)
+        print (date, lunch)
         return date, lunch
         
     header = {
@@ -117,22 +115,22 @@ def check_lunch(url, retry, user_jwt):
                 try:
                     # Check ordered lunch and vender name
                     lunch = data.get("props").get("pageProps").get("programMeal").get("ProgramMealSelections")[0].get("selection").get("item").get("name")
-                    vender_partnerId = data.get("props").get("pageProps").get("programMeal").get("ProgramMealSelections")[0].get("selection").get("item").get("partnerId")
+                    vender_name = data.get("props").get("pageProps").get("programMeal").get("ProgramMealSelections")[0].get("selection").get("item").get("partnerName")
                     location = data.get("props").get("pageProps").get("programMeal").get("ProgramMealSelections")[0].get("location")
                     #print("vender_partnerId: ", vender_partnerId)
                     
-                    # Check vender name
-                    try:
-                        for i in range(10):
-                            vender_id = data.get("props").get("pageProps").get("programMeal").get("Purchases")[0].get("purchaseContentDetails").get("partners")[i].get("partner").get("id")
-                            #print("vender_id: ", vender_id)
-                            if vender_id == vender_partnerId:
-                                vender_name = data.get("props").get("pageProps").get("programMeal").get("Purchases")[0].get("purchaseContentDetails").get("partners")[i].get("partner").get("name")
-                                #print("vender: ", vender_name)
-                                break
-                    except:
-                        vender_name = "Not Found"
-                        #print("vender_name: ", vender_name)
+                    # # Check vender name
+                    # try:
+                    #     for i in range(10):
+                    #         vender_id = data.get("props").get("pageProps").get("programMeal").get("Purchases")[0].get("purchaseContentDetails").get("partners")[i].get("partner").get("id")
+                    #         #print("vender_id: ", vender_id)
+                    #         if vender_id == vender_partnerId:
+                    #             vender_name = data.get("props").get("pageProps").get("programMeal").get("Purchases")[0].get("purchaseContentDetails").get("partners")[i].get("partner").get("name")
+                    #             #print("vender: ", vender_name)
+                    #             break
+                    # except:
+                    #     vender_name = "Not Found"
+                    #     #print("vender_name: ", vender_name)
 
                 except:
                     # If date can be found, but lunch cannot be found then lunch unbooked
@@ -176,22 +174,22 @@ if __name__ == '__main__':
     # Check today's lunch
     #today = date.today() 
     today = date.today() + timedelta(days=1) # since cronjob in Github was setup at 22:00 UTC which is a day before AU UTC+10
-    check_lunch(url=todays_meal_url(today, retry=retry, user_jwt=user_jwt), retry=retry, user_jwt=user_jwt)
-
+    #print(today)
+    #check_today = check_lunch(url=todays_meal_url(today, retry=retry, user_jwt=user_jwt), retry=retry, user_jwt=user_jwt)
     #git_commit(data = check_lunch(url=todays_meal_url(today, retry=retry, user_jwt=user_jwt), retry=retry, user_jwt=user_jwt))
 
     #Check lunchs for the next week
     next_week = date.today() + timedelta(days=7)
-    print(next_week)
-    #check_lunch(url=todays_meal_url(next_week, retry=retry, user_jwt=user_jwt), retry=retry, user_jwt=user_jwt)
+    #print(next_week)
+    check_next_week = check_lunch(url=todays_meal_url(next_week, retry=retry, user_jwt=user_jwt), retry=retry, user_jwt=user_jwt)
 
-    if "Unbooked" in check_lunch(url=todays_meal_url(next_week, retry=retry, user_jwt=user_jwt), retry=retry, user_jwt=user_jwt):
+    if "Unbooked" in check_next_week:
         attention = "ATTENTION: Book lunch for " + str(next_week) + "!!!\n"
         print(attention)
         #print("git_commit...")
         git_commit(data = attention + str(check_lunch(url=todays_meal_url(today, retry=retry, user_jwt=user_jwt), retry=retry, user_jwt=user_jwt)))
-    elif "Could not find programMealId!" in check_lunch(url=todays_meal_url(next_week, retry=retry, user_jwt=user_jwt), retry=retry, user_jwt=user_jwt):
-        attention = "ATTENTION: Could not find programMealId for " + str(next_week) + "!!!\n"
+    elif "Could not find meal id!" in check_next_week:
+        attention = "ATTENTION: Could not find meal id for " + str(next_week) + "!!!\n"
         print(attention)
         #print("git_commit...")
         git_commit(data = attention + str(check_lunch(url=todays_meal_url(today, retry=retry, user_jwt=user_jwt), retry=retry, user_jwt=user_jwt)))
