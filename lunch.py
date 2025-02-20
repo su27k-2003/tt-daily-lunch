@@ -176,13 +176,13 @@ if __name__ == '__main__':
 
     # Check today's lunch
     today = date.today() + timedelta(days=1) # since cronjob in Github was setup at 22:00 UTC which is a day before AU UTC+10
-    #print(today)
+    print(today)
     #check_today = check_lunch(url=todays_meal_url(today, retry=retry, user_jwt=user_jwt), retry=retry, user_jwt=user_jwt)
     #git_commit(data = check_lunch(url=todays_meal_url(today, retry=retry, user_jwt=user_jwt), retry=retry, user_jwt=user_jwt))
 
     #Check lunchs for the next week
     next_week = date.today() + timedelta(days=7)
-    #print(next_week)
+    print(next_week)
     check_next_week = check_lunch(url=todays_meal_url(next_week, retry=retry, user_jwt=user_jwt), retry=retry, user_jwt=user_jwt)
 
     if "Unbooked" in check_next_week:
@@ -190,7 +190,7 @@ if __name__ == '__main__':
         print(attention)
         #print("git_commit...")
         git_commit(data = attention + str(check_lunch(url=todays_meal_url(today, retry=retry, user_jwt=user_jwt), retry=retry, user_jwt=user_jwt)))
-    elif "Could not find meal id!" in check_next_week:
+    elif "Could not find meal id" in check_next_week:
         attention = "ATTENTION: Could not find meal id for " + str(next_week) + "!!!\n"
         print(attention)
         #print("git_commit...")
