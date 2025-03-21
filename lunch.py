@@ -41,7 +41,7 @@ def todays_meal_url(today, retry, user_jwt):
     # workspace/714 = TikTok - SalesForce Tower
     programmeal_url = "https://api.hampr.com.au/api/v1/workspace/714/schedule-between?startDate="+str(today)+"&endDate="+str(today)
     #programmeal_url = "https://api.hampr.com.au/api/v1/workspace/714/schedule-between?startDate=2025-01-20&endDate=2025-01-20"
-    #print(programmeal_url)
+    print(programmeal_url)
 
     header = {
         "Content-Type": "application/json",
@@ -57,20 +57,25 @@ def todays_meal_url(today, retry, user_jwt):
                 time.sleep(5) #tries to retrieve the URL, if 200 or 404 is not received, waits 5 seconds before trying again
             else:
                 data = json.loads(res.text) # Load json data in {}
+                #print("data: ")
+                #print(data)
+                #print("len(data): ", len(data))
 
                 # Sometimes (unbooked day?) programMealId in data[1] rather than data[0]
                 try:
-                    if data[0].get("programMealId"):
-                        programmeal_id = data[0].get("programMealId")
+                    if len(data) > 0:
+                        for item in data:
+                            if 'programMealId' in item:
+                                programmeal_id = item['programMealId']
+                                todays_meal_url = meal_url_base + str(programmeal_id)
                     else:
-                        programmeal_id = data[0].get("id")
+                        todays_meal_url = "Could not find meal id!"
                 except:    
                     # If "programMealId" cannot be found then it's Public Holiday/Weekend
                     todays_meal_url = "Could not find meal id!"
                     print(todays_meal_url)
                     return todays_meal_url
-
-                todays_meal_url = meal_url_base + str(programmeal_id)
+                
                 print(todays_meal_url)
                 return todays_meal_url
         except requests.exceptions.ConnectionError:
