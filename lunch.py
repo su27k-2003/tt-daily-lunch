@@ -62,16 +62,16 @@ def todays_meal_url(today, retry, user_jwt):
                 #print("len(data): ", len(data))
 
                 # Sometimes (unbooked day?) programMealId in data[1] rather than data[0]
-                try:
-                    if len(data) > 0:
+                if len(data) > 0:
+                    try:
                         for item in data:
                             if 'programMealId' in item:
                                 programmeal_id = item['programMealId']
                                 todays_meal_url = meal_url_base + str(programmeal_id)
-                    else:
+                    except:    
+                        # If "programMealId" cannot be found then it's Public Holiday/Weekend
                         todays_meal_url = "Could not find meal id!"
-                except:    
-                    # If "programMealId" cannot be found then it's Public Holiday/Weekend
+                else:
                     todays_meal_url = "Could not find meal id!"
                     print(todays_meal_url)
                     return todays_meal_url
