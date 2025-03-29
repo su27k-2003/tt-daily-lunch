@@ -52,6 +52,7 @@ def todays_meal_url(today, retry, user_jwt):
     for i in range(retry):
         try:
             res = requests.get(url = programmeal_url, headers = header)
+            #print(res.status_code)
 
             if res.status_code not in [200, 404]:
                 time.sleep(5) #tries to retrieve the URL, if 200 or 404 is not received, waits 5 seconds before trying again
@@ -63,18 +64,24 @@ def todays_meal_url(today, retry, user_jwt):
 
                 # Sometimes (unbooked day?) programMealId in data[1] rather than data[0]
                 if len(data) > 0:
+                    print("len(data)>0")
                     try:
                         for item in data:
                             if 'programMealId' in item:
                                 programmeal_id = item['programMealId']
                                 todays_meal_url = meal_url_base + str(programmeal_id)
+                                print(todays_meal_url)
+                            else:
+                                # If "programMealId" cannot be found then it's Public Holiday/Weekend
+                                todays_meal_url = "Could not find meal id!"
+                                #print(todays_meal_url)
                     except:    
                         # If "programMealId" cannot be found then it's Public Holiday/Weekend
                         todays_meal_url = "Could not find meal id!"
+                        #print(todays_meal_url)
                 else:
                     todays_meal_url = "Could not find meal id!"
-                    print(todays_meal_url)
-                    return todays_meal_url
+                    #print(todays_meal_url)
                 
                 print(todays_meal_url)
                 return todays_meal_url
@@ -184,9 +191,9 @@ if __name__ == '__main__':
     print(today)
     #check_today = check_lunch(url=todays_meal_url(today, retry=retry, user_jwt=user_jwt), retry=retry, user_jwt=user_jwt)
     #git_commit(data = check_lunch(url=todays_meal_url(today, retry=retry, user_jwt=user_jwt), retry=retry, user_jwt=user_jwt))
-
+    
     #Check lunchs for the next week
-    next_week = date.today() + timedelta(days=7)
+    next_week = date.today() + timedelta(days=4)
     print(next_week)
     check_next_week = check_lunch(url=todays_meal_url(next_week, retry=retry, user_jwt=user_jwt), retry=retry, user_jwt=user_jwt)
 
@@ -203,3 +210,4 @@ if __name__ == '__main__':
     else:
         print("lunch booked for the next week")
         git_commit(data = check_lunch(url=todays_meal_url(today, retry=retry, user_jwt=user_jwt), retry=retry, user_jwt=user_jwt))
+    
